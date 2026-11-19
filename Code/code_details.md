@@ -21,6 +21,15 @@ The study domain is partitioned into 4 regional pipelines (covering 14 sub-regio
 | **Peninsular Malaysia** | Peninsular Malaysia Peat, Peninsular Malaysia Non-Peat | `emulator_pm.ipynb` | `forecaster_pm.ipynb` |
 | **Maritime East** | Philippines (Luzon, Visayas, Mindanao), Papua New Guinea (West Savanna, Highlands, Islands East) | `emulator_maritime_east.ipynb` | `forecaster_maritime_east.ipynb` |
 
+## Dataset Ingestion (`.npz` Archives)
+
+All notebooks load a unified $0.25^\circ \times 0.25^\circ$ compiled NumPy archive produced from the raw multi-source satellite/reanalysis datasets (`process_all_kaggle_data_025.py`):
+- **`bbur_enhanced_training_ready_seasia_025.npz` (1,918.78 MB / ~1.92 GB on disk, ~4.05 GB in memory):** Loaded via `np.load(..., allow_pickle=True)` to provide `x_flat` (`9,725,184 × 104`, `float32` covering `216 months × 168 lat × 268 lon`), `time_idx`, `lat_flat`, `lon_flat`, `feature_names`, `years_pm`, `lat`, and `lon`. The notebook auto-detects `GRID_RES_DEG` ($0.25^\circ$) from the coordinate spacing, builds explicit 6- and 12-month deep-lag precursors and lag-1 antecedent rolling dryness/NDVI features, and filters to active fire pixels (`BA > 1e-8`, variance `> 1e-10`).
+- **`gfed4s_targets_seasia_025.npz` (3.28 MB on disk):** Loaded via `np.load(...)` to extract `y_total_flat` (ground-truth GFED4s burned-area fraction) and overwrite `burned_area_pred` in `x_flat` prior to cosine-latitude $\text{km}^2$ area conversion.
+
+> [!NOTE]
+> Because `bbur_enhanced_training_ready_seasia_025.npz` is **1.92 GB** (and the raw NetCDF/GeoTIFF archives exceed **10 GB**), the `.npz` datasets exceed GitHub's 100 MB file-size limit and are excluded via `.gitignore`. See [`Data/data_details.md`](../Data/data_details.md) for the full feature schema and path configuration (`_DATASET_CANDIDATES`).
+
 ## Pipeline Outputs
 
 Each notebook exports standardized artifacts (`bbur_{mode}_{region}_*`):

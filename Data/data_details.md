@@ -1,6 +1,14 @@
 # Southeast Asia Burned Area Dataset (`data/`)
 
-This directory contains the raw observational/reanalysis datasets (`data/Raw_Data/`), the preprocessing script (`data/process_all_kaggle_data_025.py`), and the **0.25° × 0.25° Kaggle-ready training archives** covering Southeast Asia from **January 2003 to December 2020** (216 months).
+This directory contains the documentation and schema for the raw observational/reanalysis datasets (`data/Raw_Data/`), the preprocessing pipeline (`data/process_all_kaggle_data_025.py`), and the compiled **0.25° × 0.25° Kaggle-ready `.npz` training archives** covering Southeast Asia from **January 2003 to December 2020** (216 months).
+
+> [!IMPORTANT]
+> **Why the `.npz` and Raw Datasets Are Not Uploaded to GitHub**
+> The multi-source raw datasets (MODIS 1 km NetCDF at ~7.1 GB, SoilGrids 250 m GeoTIFF at ~1.37 GB, plus multi-decade ERA5 and GFED4s NetCDF archives) were preprocessed and consolidated into two compressed NumPy archives:
+> - `bbur_enhanced_training_ready_seasia_025.npz`: **1,918.78 MB (~1.92 GB)** on disk (~4.05 GB `float32` feature matrix in memory)
+> - `gfed4s_targets_seasia_025.npz`: **3.28 MB** on disk
+>
+> Because the compiled feature matrix (`1.92 GB`) and raw spatial archives far exceed **GitHub's 100 MB per-file upload limit**, `*.npz` files and raw data binaries are excluded via `.gitignore` and hosted externally (e.g., as a Kaggle Dataset mounted at `/kaggle/input/datasets/mahadiqbal061/bbur-enhanced/` or placed locally in `Data/`).
 
 ---
 
@@ -34,8 +42,8 @@ Terra MODIS Monthly 1 km Vegetation Indices (**MOD13A3 v061**):
 
 All variables are aligned onto a unified **0.25° × 0.25° Southeast Asia grid** (`168 lat × 268 lon = 45,024 pixels`) over **216 months** (Jan 2003 – Dec 2020), totaling **9,725,184 spatiotemporal rows** with 0% NaNs (temporal gaps imputed via 2003–2011 pixel historical means; all-null boundary pixels imputed via nearest valid pixels within the same sub-region). All standardized anomalies are computed strictly from the **2003–2011 pre-test training period** (first 108 months).
 
-### 2.1 Feature Matrix (`data/bbur_enhanced_training_ready_seasia_025.npz`)
-- **Dimensions**: `x_flat` of shape `9,725,184 × 104` (`float32`), plus `y_flat`, `valid_mask`, `is_zero_flux`, `time_idx`, `lat_flat`, `lon_flat`, `feature_names` (`104,`), `years_pm` (`216,`), `lat` (`168,`), `lon` (`268,`).
+### 2.1 Feature Matrix (`data/bbur_enhanced_training_ready_seasia_025.npz` — 1,918.78 MB / 1.92 GB)
+- **Dimensions**: `x_flat` of shape `9,725,184 × 104` (`float32`, ~4.05 GB in RAM), plus `y_flat`, `valid_mask`, `is_zero_flux`, `time_idx`, `lat_flat`, `lon_flat`, `feature_names` (`104,`), `years_pm` (`216,`), `lat` (`168,`), `lon` (`268,`).
 - **104 Columns in `feature_names`**:
   - **Seasonality & Static Masks (5)**: `ann_sin`, `ann_cos`, `static_soc`, `peat_mask`, `fire_season`
   - **ENSO & Drought Proxies (7)**: `strong_enso`, `oni_lag0`–`oni_lag3`, `drought_stress_kbdi_proxy_3mo/6mo`
@@ -44,10 +52,23 @@ All variables are aligned onto a unified **0.25° × 0.25° Southeast Asia grid*
   - **MODIS Vegetation Dynamics (14)**: `ndvi_raw`, `ndvi_anom` (lags 0, 1, 3, 6, 12 mo), `ndvi_cumdeficit_3mo/6mo/12mo`, `ndvi_anom_delta`, `ndvi_drought_interact`, `evi_raw`, `evi_anom` (lags 0, 1 mo)
   - **Legacy Column Excluded at Notebook Ingestion (1)**: `cams_tc_ch4` (retained for index compatibility, dropped via `BASE_EXCLUDE` in all 8 notebooks)
 
-### 2.2 GFED4s Target Archive (`data/gfed4s_targets_seasia_025.npz`)
+### 2.2 GFED4s Target Archive (`data/gfed4s_targets_seasia_025.npz` — 3.28 MB)
 - **Contents**: Ground-truth observational burned area fractions aligned row-for-row (`9,725,184` rows) with `x_flat`:
   - `y_total_flat`: Total burned area fraction per 0.25° pixel
   - `y_peat_flat`, `y_defo_flat`, `y_crop_flat`: Partitioned burned area fractions by fire regime
   - `active_pixel_mask`, `time_idx`, `lat_flat`, `lon_flat`, `lat` (`168,`), `lon` (`268,`), `years` (`216,`)
 - **Area Conversion**: Converting fractional burned area to physical area ($\text{km}^2$) uses cosine-latitude cell area:
   $$\text{Area (km}^2\text{)} = \text{fraction} \times (0.25 \times 111.32)^2 \times \cos(\text{lat})$$
+
+---
+
+## 3. How the Notebooks Load and Use the `.npz` Archives
+
+In all 8 regional notebooks (`Code/emulator_*.ipynb` and `Code/forecaster_*.ipynb`), the `.npz` files are ingested in Cell 3–4 as follows:
+
+1. **Candidate Path Resolution**: Each notebook searches `_DATASET_CANDIDATES` and `_GFED_CANDIDATES` (checking `/kaggle/input/datasets/mahadiqbal061/bbur-enhanced/` first, then local relative paths `../data/BBUR_enhanced_kaggle_025/`).
+2. **Feature Matrix Extraction**: `np.load(DATASET_PATH, allow_pickle=True)` loads `x_flat`, `y_flat`, `time_idx`, `lat_flat`, `lon_flat`, `feature_names`, `years_pm`, `lat`, and `lon` into `float32`/`int32` arrays, then immediately deletes the `NpzFile` handle and triggers `gc.collect()` to free decompressed buffer overhead.
+3. **Auto-Detected Grid Resolution**: `GRID_RES_DEG` (`0.25°`) is automatically inferred from the median spacing of unique `lat` and `lon` coordinates so downstream cosine-latitude pixel-area conversions ($\text{km}^2$) adapt automatically to the loaded `.npz`.
+4. **GFED4s Target Override**: `np.load(GFED_TARGET_PATH)` loads `y_total_flat` from `gfed4s_targets_seasia_025.npz` and overwrites the `burned_area_pred` column of `x_flat` (`x_flat[:, ba_idx] = y_true_ba`) to ensure exact alignment with ground-truth GFED4s burned-area fractions.
+5. **In-Notebook Deep-Lag & Antecedent Rolling Expansion**: Using the `(N_MONTHS=216, N_PIXELS=45,024)` grid structure of `x_flat`, the notebook constructs 6- and 12-month deep lag precursors (`era5_z_500hPa`, `oni`, `era5_tp`, `era5_vpd`, `burned_area_pred`) and lag-1 antecedent versions of rolling dryness/vegetation-stress features (`_ROLLING_NPZ_COLS`) for leak-free 1-month-lead forecasting.
+6. **Active-Pixel & Variance Filtering**: Pixels with maximum historical burned area $\le 10^{-8}$ (`BA_ACTIVE_THRESHOLD`) or temporal variance $\le 10^{-10}$ (`VARIANCE_THRESHOLD`) are masked out before regional sub-setting and walk-forward training.
