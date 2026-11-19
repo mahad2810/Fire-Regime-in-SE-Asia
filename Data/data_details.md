@@ -9,6 +9,8 @@ This document describes the raw observational and reanalysis datasets (**444 fil
 > - `gfed4s_targets_seasia_025.npz`: **3.28 MB** on disk
 >
 > Because the compiled `.npz` dataset (`1.92 GB`) and the raw spatial archives (`9.33 GB`) exceed **GitHub's 100 MB per-file upload limit**, the raw binaries and `.npz` archives could not be uploaded to GitHub and are excluded from version control.
+>
+> **Download the compiled `.npz` files:** [Google Drive Folder](https://drive.google.com/drive/folders/1JdrqukD05QXRoW2JGfpWtoDG2hE8l3Tv?usp=sharing)
 
 ---
 

@@ -28,7 +28,7 @@ All notebooks load a unified $0.25^\circ \times 0.25^\circ$ compiled NumPy archi
 - **`gfed4s_targets_seasia_025.npz` (3.28 MB on disk):** Loaded via `np.load(...)` to extract `y_total_flat` (ground-truth GFED4s burned-area fraction) and overwrite `burned_area_pred` in `x_flat` prior to cosine-latitude $\text{km}^2$ area conversion.
 
 > [!NOTE]
-> Because `bbur_enhanced_training_ready_seasia_025.npz` is **1.92 GB** (and the 444 raw NetCDF/GeoTIFF source files total **9.33 GB**), the `.npz` datasets and raw archives exceed GitHub's 100 MB file-size limit and could not be uploaded to GitHub. See `data_details.md` for the complete raw data inventory and 104-feature schema.
+> Because `bbur_enhanced_training_ready_seasia_025.npz` is **1.92 GB** (and the 444 raw NetCDF/GeoTIFF source files total **9.33 GB**), the `.npz` datasets and raw archives exceed GitHub's 100 MB file-size limit and could not be uploaded to GitHub. The compiled `.npz` files can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1JdrqukD05QXRoW2JGfpWtoDG2hE8l3Tv?usp=sharing). See `data_details.md` for the complete raw data inventory and 104-feature schema.
 
 ## Pipeline Outputs
 
