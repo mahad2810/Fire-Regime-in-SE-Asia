@@ -1,5 +1,9 @@
-# Ignore large data archives
+# Ignore large compiled and raw data archives
 *.npz
+*.nc
+*.tif
+Raw_Data/
+Data/Raw_Data/
 
 # Python / Jupyter artifacts
 __pycache__/
