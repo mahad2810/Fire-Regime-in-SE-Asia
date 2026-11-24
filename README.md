@@ -4,12 +4,12 @@ This repository contains the modelling code and dataset documentation accompanyi
 
 ## Repository Contents
 
-- [`Code/code_details.md`](Code/code_details.md) — Documentation of the two-stage hurdle ensemble architecture, predictor groups, walk-forward evaluation protocol, and exported outputs across the four regional pipelines (eight notebooks):
+- [`Code/README.md`](Code/README.md) — Documentation of the two-stage hurdle ensemble architecture, predictor groups, walk-forward evaluation protocol, and exported outputs across the four regional pipelines (eight notebooks):
   - **Mainland Southeast Asia** (Myanmar, Northern Lower Mekong, Southern Lower Mekong): [`emulator_mainland.ipynb`](Code/emulator_mainland.ipynb), [`forecaster_mainland.ipynb`](Code/forecaster_mainland.ipynb)
   - **Maritime West** (Sumatra and Kalimantan Peat, Non-Peat Monsoonal, Non-Peat Savanna): [`emulator_maritime_west.ipynb`](Code/emulator_maritime_west.ipynb), [`forecaster_maritime_west.ipynb`](Code/forecaster_maritime_west.ipynb)
   - **Peninsular Malaysia** (Peat, Non-Peat): [`emulator_pm.ipynb`](Code/emulator_pm.ipynb), [`forecaster_pm.ipynb`](Code/forecaster_pm.ipynb)
   - **Maritime East** (Philippines: Luzon, Visayas, Mindanao; Papua New Guinea: West Savanna, Highlands, Islands East): [`emulator_maritime_east.ipynb`](Code/emulator_maritime_east.ipynb), [`forecaster_maritime_east.ipynb`](Code/forecaster_maritime_east.ipynb)
-- [`Data/data_details.md`](Data/data_details.md) — Inventory of raw observational and reanalysis datasets (GFED4s, ERA5, MODIS MOD13A3, SoilGrids, and GRACE/GRACE-FO), schema of the compiled $0.25^\circ$ `.npz` archives, and runtime ingestion workflow.
+- [`Data/README.md`](Data/README.md) — Inventory of raw observational and reanalysis datasets (GFED4s, ERA5, MODIS MOD13A3, SoilGrids, and GRACE/GRACE-FO), schema of the compiled $0.25^\circ$ `.npz` archives, and runtime ingestion workflow.
 
 ## Data Availability and Execution
 
